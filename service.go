@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/arunjitsingh/goappengine/auth"
+	"github.com/ajsd/go/auth"
 	"github.com/mjibson/appstats"
 )
 
