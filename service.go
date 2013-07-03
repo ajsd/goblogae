@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/arunjitsingh/goappengine/auth"
+	"github.com/ajsd/go/auth"
 	"github.com/mjibson/appstats"
 )
 
@@ -21,6 +21,13 @@ func NewAuthenticatedService(auth auth.Authenticator, authAll bool) *BlogService
 	return &BlogService{auth, authAll}
 }
 
+var (
+	ErrForbidden       = errors.New("Restricted resource")
+	ErrMissingQuery    = errors.New("Missing query")
+	ErrMissingMarkdown = errors.New("Missing markdown data")
+	ErrMissingID       = errors.New("Missing ID")
+)
+
 // Search
 
 type SearchArgs struct {
@@ -34,11 +41,11 @@ type SearchResult struct {
 
 func (s *BlogService) Search(r *http.Request, args *SearchArgs, result *SearchResult) error {
 	if s.auth != nil && s.authAll && !s.auth.CheckAuth(r) {
-		return auth.ErrForbidden
+		return ErrForbidden
 	}
 
 	if args.Query == "" {
-		return errors.New("Missing query")
+		return ErrMissingQuery
 	}
 
 	c := appstats.NewContext(r)
@@ -91,11 +98,11 @@ type SaveResult struct {
 
 func (s *BlogService) Save(r *http.Request, args *SaveArgs, result *SaveResult) error {
 	if s.auth != nil && !s.auth.CheckAuth(r) {
-		return auth.ErrForbidden
+		return ErrForbidden
 	}
 
 	if len(args.Markdown) == 0 {
-		return errors.New("Missing markdown data")
+		return ErrMissingMarkdown
 	}
 	// TODO(arunjit): Validate markdown?
 
@@ -136,11 +143,11 @@ type DeleteResult struct {
 
 func (s *BlogService) Delete(r *http.Request, args *DeleteArgs, result *DeleteResult) error {
 	if s.auth != nil && !s.auth.CheckAuth(r) {
-		return auth.ErrForbidden
+		return ErrForbidden
 	}
 
 	if args.ID == 0 {
-		return errors.New("Missing ID")
+		return ErrMissingID
 	}
 
 	c := appstats.NewContext(r)
