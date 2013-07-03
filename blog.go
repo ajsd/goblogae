@@ -8,7 +8,10 @@ import (
 	"appengine/datastore"
 )
 
-const kind = "BlogEntry"
+const (
+	kind       = "BlogEntry"
+	queryLimit = 20
+)
 
 // BlogEntry
 type BlogEntry struct {
@@ -99,8 +102,10 @@ func (e *BlogEntry) hasKey() bool {
 // TODO(arunjit): Query cursors instead of Range, q.Run() instead of q.GetAll()
 
 func runQuery(c appengine.Context, q *datastore.Query, r *Range) ([]BlogEntry, error) {
-	if r != nil && r.Limit > 0 {
+	if r != nil && r.Limit > 0 && r.Limit <= queryLimit {
 		q = q.Offset(r.Offset).Limit(r.Limit)
+	} else {
+		q = q.Limit(queryLimit)
 	}
 	var es []BlogEntry
 	keys, err := q.GetAll(c, &es)
